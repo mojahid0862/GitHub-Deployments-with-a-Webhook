@@ -1,0 +1,35 @@
+#!/bin/bash
+cd /home/ubuntu/paper-trade
+
+# Define a central log file
+LOG_FILE="/home/ubuntu/path/deploy.log"
+
+# Log start
+echo "Starting deployment..." >> $LOG_FILE
+date >> $LOG_FILE
+
+# Pull the latest code
+echo "Pulling latest code..." >> $LOG_FILE
+git pull origin master >> $LOG_FILE 2>&1
+
+# Install dependencies and build main project
+echo "Installing main dependencies..." >> $LOG_FILE
+npm install >> $LOG_FILE 2>&1
+
+echo "Building main project..." >> $LOG_FILE
+npm run build >> $LOG_FILE 2>&1
+
+# Go to socket directory and install dependencies
+echo "Changing directory to ./socket" >> $LOG_FILE
+cd ./socket || { echo "Failed to change directory to ./socket" >> $LOG_FILE; exit 1; }
+
+echo "Installing dependencies for socket..." >> $LOG_FILE
+npm install --omit=dev >> $LOG_FILE 2>&1
+
+# Restart the app with pm2
+echo "Reloading pm2 processes..." >> $LOG_FILE
+pm2 reload all >> $LOG_FILE 2>&1
+
+# Log completion
+echo "Deployment completed." >> $LOG_FILE
+date >> $LOG_FILE
